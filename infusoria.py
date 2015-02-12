@@ -15,6 +15,7 @@ BGColor = 50, 40, 30    # Цвет фона
 clock = pygame.time.Clock()
 milli = seconds = 0.0
 screen.fill(BGColor)
+debug=0
 
 InfColor = [0, 0, 255]  # Цвет инфузории
 FoodColor = 0, 255, 0   # Цвет еды
@@ -176,12 +177,14 @@ def sex(u):
             unit[len(unit)-1]['COLOR'] = clr        # Цвет новой инфузории меняется
             unit[len(unit)-1]['COUNT_SEGMENT'] = 0  # Новая клетка ниразу не делилась
             mutation_count = mutation_count + 1
-            print >> sys.stderr, '############### MUTATION ################ count:', mutation_count
             #pygame.time.delay(1000)
- 
-        print >> sys.stderr, '!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', sex_count
-        for i in xrange(len(unit)):
-            print >> sys.stderr, i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR']
+            if debug:
+                print >> sys.stderr, '############### MUTATION ################ count:', mutation_count
+
+ 	if debug:
+            print >> sys.stderr, '!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', sex_count
+            for i in xrange(len(unit)):
+                print >> sys.stderr, i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR']
             
 def death(u):
     '''Убиваем инфузорию'''
@@ -218,9 +221,10 @@ while mainLoop :
     step = step+1
 
     UC = units_count()
-    print >> sys.stderr, 'Step:', step, '       Mutation count', mutation_count, '        Red units:', UC[0], 'Blue units:', UC[1] # Всякий дебаг 
-    for i in xrange(len(unit)):
-        print >> sys.stderr, i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR'], '    xy:', unit[i]['POSITION']
+    if debug:
+        print >> sys.stderr, 'Step:', step, '       Mutation count', mutation_count, '        Red units:', UC[0], 'Blue units:', UC[1] # Всякий дебаг 
+        for i in xrange(len(unit)):
+            print >> sys.stderr, i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR'], '    xy:', unit[i]['POSITION']
     
     for unt in xrange(len(unit)): # Выполняем операции с каждой инфузорией
         unit[unt]['AGE'] = unit[unt]['AGE']+1 # Возраст увеличиваем на 1
@@ -236,7 +240,8 @@ while mainLoop :
     
     while first_run :
         food()
-        print >> sys.stderr, first_run, len(Foods)
+        if debug:
+            print >> sys.stderr, first_run, len(Foods)
  
     for event in pygame.event.get():
         if event.type == pygame.QUIT:

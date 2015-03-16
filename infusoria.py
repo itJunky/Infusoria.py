@@ -80,14 +80,15 @@ def get_inf_speed(u):
     
 def move(xy,u):
     '''Осуществляет сдвиг экземпляра инфузории''' 
-    x = u['POSITION'][0]+0.1 # добавляем 0.1 чтобы число отличалось от нуля
-    y = u['POSITION'][1]+0.1 # поскольку в последующих подсчётах нельзя делить на нуль
+    x = u['POSITION'][0]
+    y = u['POSITION'][1]
     xk = u['TARGET'][0] # координаты цели
     yk = u['TARGET'][1]
     Dl = get_inf_speed(u)
     distance = math.sqrt((xk-x)**2+(yk-y)**2)
-    x = x+Dl*(xk-x)/distance # Считаем насколько надо сдвинуться по Х 
-    y = y+Dl*(yk-y)/distance # По Y
+    if distance > 0.:
+        x = x+Dl*(xk-x)/distance # Считаем насколько надо сдвинуться по Х 
+        y = y+Dl*(yk-y)/distance # По Y
     if xy == 'X': # Если запрашивалась X координата, возвращаем новый X
         u['POSITION'][0] = int(x)
         return int(x)

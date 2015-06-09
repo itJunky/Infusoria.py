@@ -15,7 +15,7 @@ BGColor = 50, 40, 30    # Цвет фона
 clock = pygame.time.Clock()
 milli = seconds = 0.0
 screen.fill(BGColor)
-debug=0
+debug = 0
 
 InfColor = [0, 0, 255]  # Цвет инфузории
 FoodColor = 0, 255, 0   # Цвет еды
@@ -73,11 +73,14 @@ def painting(u):
     pygame.draw.circle(screen, u['COLOR'], [x,y], radius) # рисуем инфузорию
 
 def get_inf_speed(u):
-    milli = clock.tick(100)
+    #milli = clock.tick(100)
+    global milli
     seconds = milli / 1000.0
     Dl = u['SPEED'] * seconds # Скорость инфузории
     return Dl
-    
+
+
+# noinspection PyAugmentAssignment
 def move(xy,u):
     '''Осуществляет сдвиг экземпляра инфузории''' 
     x = u['POSITION'][0]
@@ -87,7 +90,7 @@ def move(xy,u):
     Dl = get_inf_speed(u)
     distance = math.sqrt((xk-x)**2+(yk-y)**2)
     if distance > 0.:
-        x = x+Dl*(xk-x)/distance # Считаем насколько надо сдвинуться по Х 
+        x = x+Dl*(xk-x)/distance # Считаем насколько надо сдвинуться по Х
         y = y+Dl*(yk-y)/distance # По Y
     if xy == 'X': # Если запрашивалась X координата, возвращаем новый X
         u['POSITION'][0] = int(x)
@@ -220,6 +223,7 @@ mainLoop = True
 while mainLoop :
     '''Основной цикл программы'''
     step = step+1
+    milli = clock.tick(100)
 
     UC = units_count()
     if debug:

@@ -10,10 +10,11 @@ import random
 import sys
 
 debug = 1
+# TODO Отловить баг с бегающими трупами. Ловить их по цвету и при измененнии координат повторно удалять или не давать сдвинуться.
 
 pygame.display.set_caption('Life Infusoria')
-width = 1200  # Размеры экрана
-height = 700
+width = 1000  # Размеры экрана
+height = 800
 screen = pygame.display.set_mode((width, height))
 BGColor = 50, 40, 30  # Цвет фона
 screen.fill(BGColor)
@@ -41,7 +42,7 @@ class Infusoria:
     dna = ['SPEED', 'VISION', 'LIFE_TIME']  # ДНК(ячейки которые могут мутировать)
     dna[0] = 200
     dna[1] = 10
-    dna[2] = 100
+    dna[2] = 300
 
     SPEED = dna[0]          # m 0 Скорость
     POSITION = [100, 100]   #   1 Положене
@@ -55,7 +56,7 @@ class Infusoria:
     HUNGRY = 0              #   9 Давно ли ел
     LIFE_TIME = dna[2]      # m 10 Время жизни без еды
     MUTATION = 0            #   11 Мутация
-    COUNT_SEGMENT = 0       ##  12 Количmilli = clock.tick(100)ество делений инфузории(каждое 5 поедание еды)
+    COUNT_SEGMENT = 0       ##  12 Количество делений инфузории(каждое 5 поедание еды)
     EAT_PRODUCTIVITY = 0    ##  13 Результативность поедания (статический, задается при рождении и записывается детям)
     PARENT_PRODUCTIVITY = 0 ##  14 Родительская результативность
     # 0,          #   15 Общее количство ходов
@@ -96,10 +97,10 @@ class Infusoria:
         self.POSITION[1] = int(y)
 
     def get_inf_speed(self):
-        milli = clock.tick(100)
+        milli = clock.tick(1000)
         #print milli
         #global milli
-        seconds = milli / 1000.0
+        seconds = milli / 250.0
         Dl = self.SPEED * seconds  # Скорость инфузории
         return Dl
 
@@ -123,6 +124,7 @@ class Infusoria:
             self.TRG_EXIST = 0  # Теперь цели нет
             self.HUNGRY = 0  # Сбрасываем счётчик давности еды
             self.EAT_COUNT += 1  # Съел ещё одну еду
+
 
     def set_target(self):
         '''Поиск ближайшей еды'''
@@ -150,11 +152,12 @@ class Infusoria:
         else:  # Если еда не видна
             self.TRG_EXIST = 0  # цель отсутствует
 
-        if (self.TRG_EXIST == 0) and (self.HUNGRY >= self.LIFE_TIME/3):  # Если нет цели и проголодался
+        if (self.TRG_EXIST == 0) and (self.HUNGRY >= self.LIFE_TIME/2):  # Если нет цели и проголодался
             if self.AGE % self.radius == 0:  # и ход кратен 20
-                self.TARGET = [random.uniform(0, width), random.uniform(0, height)]  # Выбор новой случайной цели
-        elif (self.TRG_EXIST == 0) and (self.AGE % 5 == 0):  # Если же нет цели, не голоден и ход кратен 5
+               self.TARGET = [random.uniform(0, width), random.uniform(0, height)]  # Выбор новой случайной цели
+        elif (self.TRG_EXIST == 0) and (self.AGE % 50 == 0):  # Если же нет цели, не голоден и ход кратен 5
             self.TARGET = [random.uniform(0, width), random.uniform(0, height)]  # Выбор новой случайной цели
+
 
     def clone(self):
         '''Размножение'''
@@ -197,9 +200,19 @@ class Infusoria:
         if self.HUNGRY >= self.LIFE_TIME:  # Если время без еды меньше лимита
             # затираем инфузорию
             pygame.draw.circle(screen, (0, 0, 0), [self.POSITION[0], self.POSITION[1]], self.radius)
-            del unit[unt]
+            try:
+                unit.pop(unt)
+            except:
+                print([self.POSITION[0], self.POSITION[1]])
+                print(unt)
+                print(unit[unt])
+                from IPython import embed
+                embed()
+                sys.exit()
+
             return 1
-        else: return 0
+        else:
+            return 0
 
 infusoria = Infusoria()
 unit = [infusoria, copy.deepcopy(infusoria)]

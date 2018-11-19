@@ -11,10 +11,10 @@ import sys
  
 pygame.display.set_caption('Life Infusoria')
  
-width = 500             # Размеры экрана
-height = 500
+width = 1000             # Размеры экрана
+height = 1000
 screen = pygame.display.set_mode((width, height))
-BGColor = 50, 40, 30    # Цвет фона
+BGColor = [50, 40, 30]    # Цвет фона
 
 clock = pygame.time.Clock()
 milli = seconds = 0.0
@@ -45,7 +45,8 @@ infusoria = {   'SPEED':               100,  #m  0 Скорость
                 'MUTATION':              0,  #   11 Мутация
                 'COUNT_SEGMENT':         0,  ##  12 Количество делений инфузории(каждое 5 поедание еды)
                 'EAT_PRODUCTIVITY':      0,  ##  13 Результативность поедания (статический, задается при рождении и записывается детям)
-                'PARENT_PRODUCTIVITY':   0   ##  14 Родительская результативность
+                'PARENT_PRODUCTIVITY':   0,   ##  14 Родительская результативность
+                'FREEZE':               0,  # Время задержки после деления
             }          
                 #0,          #   15 Общее количство ходов
                 #           время отдыха(выносливость)
@@ -74,7 +75,14 @@ def painting(u):
     y = move('Y', u)
     #xk = u['TARGET'][0]
     #yk = u['TARGET'][1]
-    pygame.draw.circle(screen, u['COLOR'], [x,y], radius) # рисуем инфузорию
+    # print('R {}'.format(radius))
+    # print(type(radius))
+    print('BGCLR: {}'.format(BGColor))
+    print(type(BGColor))
+    infusoria_color = u['COLOR'][0], u['COLOR'][1], u['COLOR'][2]
+    print(infusoria_color )
+    print(type(infusoria_color))
+    pygame.draw.circle(screen, infusoria_color, [x, y], radius ) # рисуем инфузорию
 
 def get_inf_speed(u):
     #milli = clock.tick(100)
@@ -86,22 +94,25 @@ def get_inf_speed(u):
 
 # noinspection PyAugmentAssignment
 def move(xy, u):
-    '''Осуществляет сдвиг экземпляра инфузории''' 
-    x = u['POSITION'][0]
-    y = u['POSITION'][1]
-    xk = u['TARGET'][0]  # координаты цели
-    yk = u['TARGET'][1]
-    Dl = get_inf_speed(u)
-    distance = math.sqrt((xk-x)**2+(yk-y)**2)
-    if distance > 0.:
-        x = x+Dl*(xk-x)/distance # Считаем насколько надо сдвинуться по Х
-        y = y+Dl*(yk-y)/distance # По Y
-    if xy == 'X': # Если запрашивалась X координата, возвращаем новый X
-        u['POSITION'][0] = int(x)
-        return int(x)
-    if xy == 'Y': # Если запрашивалась Y координата, возвращаем новый Y
-        u['POSITION'][1] = int(y)
-        return int(y)
+    '''Осуществляет сдвиг экземпляра инфузории'''
+    # Не перемещаться, после деления
+    if u['FREEZE'] > 10:
+
+        x = u['POSITION'][0]
+        y = u['POSITION'][1]
+        xk = u['TARGET'][0]  # координаты цели
+        yk = u['TARGET'][1]
+        Dl = get_inf_speed(u)
+        distance = math.sqrt((xk-x)**2+(yk-y)**2)
+        if distance > 0.:
+            x = x+Dl*(xk-x)/distance # Считаем насколько надо сдвинуться по Х
+            y = y+Dl*(yk-y)/distance # По Y
+        if xy == 'X': # Если запрашивалась X координата, возвращаем новый X
+            u['POSITION'][0] = int(x)
+            return int(x)
+        if xy == 'Y': # Если запрашивалась Y координата, возвращаем новый Y
+            u['POSITION'][1] = int(y)
+            return int(y)
 
 def where_food(u):
     '''Поиск ближайшей еды'''
@@ -245,8 +256,9 @@ while mainLoop :
     for unt in xrange(len(unit)): # Выполняем операции с каждой инфузорией
         unit[unt]['AGE'] = unit[unt]['AGE']+1 # Возраст увеличиваем на 1
         unit[unt]['HUNGRY'] = unit[unt]['HUNGRY']+1 # Увеличиваем на 1 время с последней кормёжки
+        unit[unt]['FREEZE'] = unit[unt]['FREEZE'] + 1  # Увеличиваем на 1 время с последней кормёжки
         painting(unit[unt]) # Прорисовка
-        where_food(unit[unt]) # Поиск еды
+        where_food(unit[unt]) # Поиск едыa
         eating(unit[unt]) # Поедание(если достигли какой-то еды)
         sex(unit[unt]) # Размножение
         dt = death(unit[unt]) # Смерть
@@ -265,6 +277,6 @@ while mainLoop :
             if event.key == pygame.K_ESCAPE:
                 mainLoop = False
     
-    pygame.time.delay(1)
+    pygame.time.delay(2000)
 
 pygame.quit()

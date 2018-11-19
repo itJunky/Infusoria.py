@@ -17,13 +17,14 @@ width = 1000  # Размеры экрана
 height = 800
 screen = pygame.display.set_mode((width, height))
 BGColor = 50, 40, 30  # Цвет фона
+LocatorColor = 50, 45, 40
 screen.fill(BGColor)
 
 clock = pygame.time.Clock()
 milli = seconds = 0.0
 
 FoodColor = 0, 255, 0   # Цвет еды
-FoodCount = 200         # Количество еды
+FoodCount = 50         # Количество еды
 FoodRadius = 2          # Размер еды
 Foods = [(int(width / 2), int(height / 2))]  # Еда
 
@@ -41,8 +42,8 @@ class Infusoria:
 
     dna = ['SPEED', 'VISION', 'LIFE_TIME']  # ДНК(ячейки которые могут мутировать)
     dna[0] = 200
-    dna[1] = 10
-    dna[2] = 300
+    dna[1] = 20
+    dna[2] = 800
 
     SPEED = dna[0]          # m 0 Скорость
     POSITION = [100, 100]   #   1 Положене
@@ -68,13 +69,18 @@ class Infusoria:
 
     def painting(self, backward=False):
         '''Стираем объект в текущей позиции'''
-        pygame.draw.circle(screen, BGColor, [self.POSITION[0], self.POSITION[1]], self.radius)  # затираем инфузорию
+        #TODO Область видимости зактирает еду. Поэтому раз в пять ходов нужно прорисовывать всю еду
+        pygame.draw.circle(screen, BGColor, [self.POSITION[0], self.POSITION[1]], self.VISION)  # затираем инфузорию
+
         '''Прорисовка объекта в новой позиции'''
         if backward == False:
             self.move()
         else:
             self.move(backward=True)
+
+        pygame.draw.circle(screen, LocatorColor, [self.POSITION[0], self.POSITION[1]], self.VISION)
         pygame.draw.circle(screen, self.COLOR, [self.POSITION[0], self.POSITION[1]], self.radius)  # рисуем инфузорию
+
 
     def move(self, backward=False):
         '''
@@ -100,7 +106,7 @@ class Infusoria:
         milli = clock.tick(1000)
         #print milli
         #global milli
-        seconds = milli / 250.0
+        seconds = milli / 100.0
         Dl = self.SPEED * seconds  # Скорость инфузории
         return Dl
 
@@ -131,7 +137,8 @@ class Infusoria:
         ## NEED OPTIMIZE ###
         x = self.POSITION[0]
         y = self.POSITION[1]
-        min_distance = 1000000000
+        min_distance = 20
+
 
         for i in xrange(len(Foods)):  # нахожу ближайшую еду
             xfood = Foods[i][0]  # Х координата еды
@@ -140,6 +147,16 @@ class Infusoria:
             if distance <= min_distance:  # Если текущая еда ближе чем предыдущая ближайшая
                 min_distance = distance  # Заменить прошлую ближайшую текущей
                 index = i  # заменить индекс ближайшей еды на текущий
+                #TODO Внести задержку что бы избежать прыганья на месте
+                print('Unit: \033[94m{} \033[0m bread: \033[93m{}\033[0m Distance {} \033[0m'.format(
+                                                        self.InfColor,
+                                                         {xfood, yfood},
+                                                         distance
+                                                  )
+                     )
+            else:
+                index = 0
+
 
         min_distance = math.sqrt(min_distance)
 
@@ -152,7 +169,7 @@ class Infusoria:
         else:  # Если еда не видна
             self.TRG_EXIST = 0  # цель отсутствует
 
-        if (self.TRG_EXIST == 0) and (self.HUNGRY >= self.LIFE_TIME/2):  # Если нет цели и проголодался
+        if (self.TRG_EXIST == 0) and (self.HUNGRY >= self.LIFE_TIME/3):  # Если нет цели и проголодался
             if self.AGE % self.radius == 0:  # и ход кратен 20
                self.TARGET = [random.uniform(0, width), random.uniform(0, height)]  # Выбор новой случайной цели
         elif (self.TRG_EXIST == 0) and (self.AGE % 50 == 0):  # Если же нет цели, не голоден и ход кратен 5
@@ -205,7 +222,7 @@ class Infusoria:
             except:
                 print([self.POSITION[0], self.POSITION[1]])
                 print(unt)
-                print(unit[unt])
+                print(unit[unt].InfColor)
                 from IPython import embed
                 embed()
                 sys.exit()

@@ -13,8 +13,8 @@ debug = 1
 # TODO Отловить баг с бегающими трупами. Ловить их по цвету и при измененнии координат повторно удалять или не давать сдвинуться.
 
 pygame.display.set_caption('Life Infusoria')
-width = 1000  # Размеры экрана
-height = 800
+width = 400  # Размеры экрана
+height = 400
 screen = pygame.display.set_mode((width, height))
 BGColor = 50, 40, 30  # Цвет фона
 LocatorColor = 50, 45, 40
@@ -34,43 +34,47 @@ mutation_range = 40  # Диапазон(сила) мутации
 
 
 class Infusoria:
-    def __init__(self):
-        pass
-
-    InfColor = [0, 0, 255]  # Цвет инфузории
-    radius = 5
-
     dna = ['SPEED', 'VISION', 'LIFE_TIME']  # ДНК(ячейки которые могут мутировать)
     dna[0] = 200
     dna[1] = 20
     dna[2] = 800
 
-    SPEED = dna[0]          # m 0 Скорость
-    POSITION = [100, 100]   #   1 Положене
-    TARGET = [300, 275]     #   2 Цель
-    TRG_INDX = 10           #   3 Индекс цели
-    VISION = dna[1]         # m 4 Зрение или дальность видимости
-    TRG_EXIST = 0           #   5 Имею цель или движусь безцельно
-    AGE = 0                 #   6 Возраст
-    EAT_COUNT = 0           #   7 Количество съеденной еды
-    COLOR = InfColor        # m 8 Цвет
-    HUNGRY = 0              #   9 Давно ли ел
-    LIFE_TIME = dna[2]      # m 10 Время жизни без еды
-    MUTATION = 0            #   11 Мутация
-    COUNT_SEGMENT = 0       ##  12 Количество делений инфузории(каждое 5 поедание еды)
-    EAT_PRODUCTIVITY = 0    ##  13 Результативность поедания (статический, задается при рождении и записывается детям)
-    PARENT_PRODUCTIVITY = 0 ##  14 Родительская результативность
-    # 0,          #   15 Общее количство ходов
-    #           время отдыха(выносливость)
-    #           вес(связан с выносливостью и возрастом)
-    #           Возможность делиться более чем на две особи
+    def __init__(self):
+        self.radius = 5
+        self.InfColor = [0, 0, 255]     # Цвет инфузории
+        self.SPEED = self.dna[0]        # m 0 Скорость
+        self.POSITION = [100, 100]      #   1 Положене
+        self.TARGET = [300, 275]        #   2 Цель
+        self.TRG_INDX = 10              #   3 Индекс цели
+        self.VISION = self.dna[1]       # m 4 Зрение или дальность видимости
+        self.TRG_EXIST = 0              #   5 Имею цель или движусь безцельно
+        self.AGE = 0                    #   6 Возраст
+        self.EAT_COUNT = 0              #   7 Количество съеденной еды
+        self.COLOR = self.InfColor      # m 8 Цвет
+        self.HUNGRY = 0                 #   9 Давно ли ел
+        self.LIFE_TIME = self.dna[2]    # m 10 Время жизни без еды
+        self.MUTATION = 0               #   11 Мутация
+        self.COUNT_SEGMENT = 0          ##  12 Количество делений инфузории(каждое 5 поедание еды)
+        self.EAT_PRODUCTIVITY = 0       ##  13 Результативность поедания (статический, задается при рождении и записывается детям)
+        self.PARENT_PRODUCTIVITY = 0    ##  14 Родительская результативность
+        # 0,          #   15 Общее количство ходов
+        #           время отдыха(выносливость)
+        #           вес(связан с выносливостью и возрастом)
+        #           Возможность делиться более чем на две особи
+        self.IDX = int(0)
 
+    def __repr__(self):
+        return "ID: {} XY: {}".format(self.IDX, self.get_position())
+
+    def get_position(self):
+        return self.POSITION[0], self.POSITION[1]
 
 
     def painting(self, backward=False):
         '''Стираем объект в текущей позиции'''
         #TODO Область видимости зактирает еду. Поэтому раз в пять ходов нужно прорисовывать всю еду
         pygame.draw.circle(screen, BGColor, [self.POSITION[0], self.POSITION[1]], self.VISION)  # затираем инфузорию
+        # pygame.draw.circle(screen, BGColor, [self.POSITION[0], self.POSITION[1]], self.radius)  # затираем инфузорию
 
         '''Прорисовка объекта в новой позиции'''
         if backward == False:
@@ -104,8 +108,6 @@ class Infusoria:
 
     def get_inf_speed(self):
         milli = clock.tick(1000)
-        #print milli
-        #global milli
         seconds = milli / 100.0
         Dl = self.SPEED * seconds  # Скорость инфузории
         return Dl
@@ -135,45 +137,54 @@ class Infusoria:
     def set_target(self):
         '''Поиск ближайшей еды'''
         ## NEED OPTIMIZE ###
-        x = self.POSITION[0]
-        y = self.POSITION[1]
-        min_distance = 20
 
+        if not self.TRG_EXIST:
+            x = self.POSITION[0]
+            y = self.POSITION[1]
+            min_distance = 200000000000
 
-        for i in xrange(len(Foods)):  # нахожу ближайшую еду
-            xfood = Foods[i][0]  # Х координата еды
-            yfood = Foods[i][1]  # Y координата еды
-            distance = math.sqrt((xfood-x)**2+(yfood-y)**2)
-            if distance <= min_distance:  # Если текущая еда ближе чем предыдущая ближайшая
-                min_distance = distance  # Заменить прошлую ближайшую текущей
-                index = i  # заменить индекс ближайшей еды на текущий
-                #TODO Внести задержку что бы избежать прыганья на месте
-                print('Unit: \033[94m{} \033[0m bread: \033[93m{}\033[0m Distance {} \033[0m'.format(
-                                                        self.InfColor,
-                                                         {xfood, yfood},
-                                                         distance
-                                                  )
-                     )
-            else:
-                index = 0
+            # нахожу ближайшую еду
+            for i in xrange(len(Foods)): # для каждой еды
+                xfood = Foods[i][0]  # Х координата еды
+                yfood = Foods[i][1]  # Y координата еды
+                distance = math.sqrt((xfood-x)**2+(yfood-y)**2)
+                if distance <= min_distance:  # Если текущая еда ближе чем предыдущая ближайшая
+                    min_distance = distance  # Заменить прошлую ближайшую текущей
+                    index = i  # заменить индекс ближайшей еды на текущий
+                    #TODO Внести задержку что бы избежать прыганья на месте
+                    print('\033[92mUnit: \033[94m{} \033[0m bread: \033[97m{} \t \033[0m Distance {} \t Target {} \033[0m'.format(
+                            self.IDX,
+                            (xfood, yfood),
+                            distance,
+                            self.TARGET
+                        )
+                    )
+                else:
+                    index = 0
 
+            # Берём квадрат рвсстояния до ближайшей видимой еды
+            min_distance = math.sqrt(min_distance)
 
-        min_distance = math.sqrt(min_distance)
+            # Когда поиск еды закончен
+            if min_distance <= self.VISION:  # И ближайшая еда в области видимости
+                self.TRG_INDX = index  # Сохраняю индекс найденной еды
+                self.TRG_EXIST = 1  # Цель выбрана
+                self.TARGET[0] = Foods[self.TRG_INDX][0]  # Устанавливаю координаты цели
+                self.TARGET[1] = Foods[self.TRG_INDX][1]
+                print("{} - SET target for {} to {} -- D: {}".format(self.IDX, self.AGE, self.TARGET, min_distance))
+            else:  # Если еда не видна
+                self.TRG_EXIST = 0  # цель отсутствует
 
-        # Когда поиск еды закончен
-        if min_distance <= self.VISION:  # И ближайшая еда в области видимости
-            self.TRG_INDX = index  # Сохраняю индекс найденной еды
-            self.TRG_EXIST = 1  # Цель выбрана
-            self.TARGET[0] = Foods[self.TRG_INDX][0]  # Устанавливаю координаты цели
-            self.TARGET[1] = Foods[self.TRG_INDX][1]
-        else:  # Если еда не видна
-            self.TRG_EXIST = 0  # цель отсутствует
+            if self.HUNGRY >= self.LIFE_TIME/3:  # Если нет цели и проголодался
+                # if self.AGE % self.radius == 0:  # и ход кратен 20
+                self.TARGET = [random.uniform(0, width), random.uniform(0, height)]  # Выбор новой случайной цели
+                self.TRG_EXIST = 0
+                print("\033[91m {} - Set RANDOM target for {} to {} \033[0m".format(self.IDX, self.AGE, self.TARGET))
 
-        if (self.TRG_EXIST == 0) and (self.HUNGRY >= self.LIFE_TIME/3):  # Если нет цели и проголодался
-            if self.AGE % self.radius == 0:  # и ход кратен 20
-               self.TARGET = [random.uniform(0, width), random.uniform(0, height)]  # Выбор новой случайной цели
-        elif (self.TRG_EXIST == 0) and (self.AGE % 50 == 0):  # Если же нет цели, не голоден и ход кратен 5
-            self.TARGET = [random.uniform(0, width), random.uniform(0, height)]  # Выбор новой случайной цели
+            elif self.AGE % 50 == 0:  # Если же нет цели, не голоден и ход кратен 50
+                self.TARGET = [random.uniform(0, width), random.uniform(0, height)]  # Выбор новой случайной цели
+                self.TRG_EXIST = 0
+                print("\033[91m {} - Set FREE RANDOM target for {} to {} \033[0m".format(self.IDX, self.AGE, self.TARGET))
 
 
     def clone(self):
@@ -181,10 +192,24 @@ class Infusoria:
         if self.EAT_COUNT == 5:  # Когда съели достаточно еды
             self.EAT_COUNT = 0  # Сбрасываем счётчик еды
             self.COUNT_SEGMENT += 1  # Увеличиваем количество делений
-            unit.append(copy.deepcopy(self))  # Клонируем инфузорию
+            # Клонируем инфузорию
+            # unit.append(copy.deepcopy(self))
+            new_inf = Infusoria()
+            new_inf.COLOR = self.COLOR
             # Координаты новой инфузории смещены
-            unit[len(unit)-1].POSITION = [self.POSITION[0]-self.radius, self.POSITION[1]-self.radius]
-            unit[len(unit)-1].AGE = 0  # Время жизни новой инфузории нулевое
+            new_inf.POSITION = [self.POSITION[0]-self.radius, self.POSITION[1]-self.radius]
+            new_inf.AGE = 0  # Время жизни новой инфузории нулевое
+
+            # поиск максмимального индекса
+            tmp_idx = int(0)
+            for u in unit:
+                if u.IDX > tmp_idx:
+                    tmp_idx = u.IDX
+
+            # Увеличим индекс новой(текущей) инфузории на единицу
+            new_inf.IDX = tmp_idx + 1
+
+            unit.append(new_inf)
 
             '''Мутация на каждое Х деление'''
             global clone_count
@@ -209,7 +234,9 @@ class Infusoria:
             if debug:
                 print >> sys.stderr, '!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', clone_count
                 for i in xrange(len(unit)):
-                    print >> sys.stderr, i+1, '--', id(unit[i]), 'age:', unit[i].AGE, '   eating:', unit[i].EAT_COUNT, '  hunger:', unit[i].HUNGRY, '   color:', unit[i].COLOR
+                    print >> sys.stderr, i+1, '--', id(unit[i]), 'age:', unit[i].AGE, '\teating:', unit[i].EAT_COUNT, \
+                        '\thunger:', unit[i].HUNGRY, '\tvision:', unit[i].VISION,  '\tcolor:', unit[i].COLOR
+                time.sleep(4)
 
 
     def death(self):
@@ -218,11 +245,12 @@ class Infusoria:
             # затираем инфузорию
             pygame.draw.circle(screen, (0, 0, 0), [self.POSITION[0], self.POSITION[1]], self.radius)
             try:
-                unit.pop(unt)
+                idx = unit.index(self)
+                del(unit[idx])
             except:
                 print([self.POSITION[0], self.POSITION[1]])
-                print(unt)
-                print(unit[unt].InfColor)
+                print('Trying to remove {}'.format(unt.IDX))
+                print(self.InfColor)
                 from IPython import embed
                 embed()
                 sys.exit()
@@ -231,13 +259,7 @@ class Infusoria:
         else:
             return 0
 
-infusoria = Infusoria()
-unit = [infusoria, copy.deepcopy(infusoria)]
-# Для отладки, вручную задаю значения второй инфузории
-unit[1].SPEED = 210  # Скорость
-unit[1].POSITION = [400, 400]
-unit[1].TARGET = [247, 275]
-unit[1].COLOR = [255, 0, 0]
+
 
 def food():
     global first_run
@@ -245,21 +267,22 @@ def food():
         '''Если количество еды уменьшилось, добавить ещё'''
         toapp = [int(random.uniform(0, width)), int(random.uniform(0, height))]
         Foods.append(toapp)
-        for i in xrange(len(Foods)):
-            '''Прорисовка еды'''
-            pygame.draw.circle(screen, FoodColor, Foods[i], FoodRadius)
+
+    for i in xrange(len(Foods)):
+        '''Прорисовка еды'''
+        pygame.draw.circle(screen, FoodColor, Foods[i], FoodRadius)
 
 def collision(u):
     unchecked = []
-    for unt in xrange(len(unit)): # Заполняем массив для проверки
-        if u.POSITION[0] == unit[unt].POSITION[0] and u.POSITION[1] == unit[unt].POSITION[1]:
+    for unt in unit: # Заполняем массив для проверки
+        if u.POSITION[0] == unt.POSITION[0] and u.POSITION[1] == unt.POSITION[1]:
             pass
         else: # Иключаем из списка выбранный экземпляр
-            unchecked.append(unit[unt])
+            unchecked.append(unt)
 
     x = u.POSITION[0]    # Текущая позиция инфузории
     y = u.POSITION[1]
-    while unchecked: # not epmty
+    while unchecked:  # not epmty
         check_with = unchecked.pop()
         xt = check_with.POSITION[0]
         yt = check_with.POSITION[1]
@@ -271,6 +294,68 @@ def collision(u):
             else:
                 u.painting()
 
+
+def debug_out(u):
+    print('\033[91mUnit: \033[94m{} \033[0m TRGT: {} XY: \033[93m {} \033[96m {} \033[0m'.format(
+            u.IDX,
+            u.TRG_EXIST,
+            u.get_position(),
+            u.TARGET
+        )
+    )
+
+    if u.POSITION[0] > width or u.POSITION[1] > height or \
+       u.POSITION[0] < 0     or u.POSITION[1] < 0:
+        print('Wrong unit. Removing')
+        print('U {} XY {}'.format(u.IDX, u.get_position()))
+        # del(unit[unit.index(u)])
+        u.POSITION = [100, 100]
+        print(u.get_position())
+        # time.sleep(3)
+
+
+
+def init_world():
+    # # Для отладки, вручную задаю значения второй инфузории
+    infusoria = Infusoria()
+    infusoria2 = Infusoria()
+
+    infusoria.IDX = 1
+    infusoria.POSITION = [100, 340]
+
+    infusoria2.IDX = 2
+    infusoria2.SPEED = 210  # Скорость
+    infusoria2.POSITION = [200, 220]
+    infusoria2.TARGET = [247, 275]
+    infusoria2.COLOR = [255, 0, 0]
+
+    print(infusoria)
+    print(infusoria2)
+    # unit = [infusoria, copy.deepcopy(infusoria)]
+    unit.append(infusoria)
+    unit.append(infusoria2)
+
+
+
+def population_limit(population):
+    if len(population) > 20:
+        # Убиваем самых старых
+        oldest = 0
+        idx = 0
+        for e in population:
+            if e.AGE > oldest:
+                oldest = e.AGE
+                idx = population.index(e)
+
+        print('Removing oldest {} with age {}'.format(idx, oldest))
+        # затираем инфузорию
+        pygame.draw.circle(screen, (0, 0, 0), [population[idx].POSITION[0], population[idx].POSITION[1]], population[idx].radius)
+        del(population[idx])
+        # time.sleep(2)
+
+unit = []
+init_world()
+
 step = 0  # Ходы(основного цикла)
 mainLoop = True
 while mainLoop:
@@ -281,17 +366,26 @@ while mainLoop:
     milli = clock.tick(20)
 
     food()
+    # clear debug screen
+    # time.sleep(2)
+    print(chr(27) + "[2J")
+    print('Step: {}  units: {}'.format(step, len(unit)))
 
-    for unt in xrange(len(unit)):  # Выполняем операции с каждой инфузорией
-        unit[unt].AGE += 1      # Возраст увеличиваем на 1
-        unit[unt].HUNGRY += 1   # Увеличиваем на 1 время с последней кормёжки
-        unit[unt].painting()
-        unit[unt].eating()
-        unit[unt].set_target()
-        unit[unt].clone()
-        collision(unit[unt])
-        dt = unit[unt].death()
+    population_limit(unit)
+
+    for unt in unit:  # Выполняем операции с каждой инфузорией
+        unt.AGE += 1      # Возраст увеличиваем на 1
+        unt.HUNGRY += 1   # Увеличиваем на 1 время с последней кормёжки
+        unt.painting()
+        unt.eating()
+        unt.set_target()
+        unt.clone()
+        # collision(unt)
+        dt = unt.death()
         if dt == 1: break
+
+        # Debug
+        debug_out(unt)
 
 
     for event in pygame.event.get():
@@ -304,7 +398,7 @@ while mainLoop:
                 unpause = True
                 while unpause:
                     for event in pygame.event.get():
-                        time.sleep(100)
+                        time.sleep(3)
                         #pygame.time.delay(100)
                         if event.key == pygame.K_SPACE:
                             unpause = False

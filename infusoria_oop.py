@@ -70,13 +70,18 @@ class Infusoria:
         return self.POSITION[0], self.POSITION[1]
 
 
-    def painting(self, backward=False):
-        '''Стираем объект в текущей позиции'''
-        #TODO Область видимости зактирает еду. Поэтому раз в пять ходов нужно прорисовывать всю еду
-        pygame.draw.circle(screen, BGColor, [self.POSITION[0], self.POSITION[1]], self.VISION)  # затираем инфузорию
-        # pygame.draw.circle(screen, BGColor, [self.POSITION[0], self.POSITION[1]], self.radius)  # затираем инфузорию
+    def clean(self):
+        '''
+        Стираем объект в текущей позиции
+        '''
+        # pygame.draw.circle(screen, BGColor, [self.POSITION[0], self.POSITION[1]], self.VISION)  # затираем инфузорию
+        pygame.draw.circle(screen, BGColor, [self.POSITION[0], self.POSITION[1]], self.radius)  # затираем инфузорию
 
-        '''Прорисовка объекта в новой позиции'''
+
+    def paint(self, backward=False):
+        '''
+        Прорисовка объекта в новой позиции
+        '''
         if backward == False:
             self.move()
         else:
@@ -106,11 +111,13 @@ class Infusoria:
         self.POSITION[0] = int(x)
         self.POSITION[1] = int(y)
 
+
     def get_inf_speed(self):
         milli = clock.tick(1000)
         seconds = milli / 100.0
         Dl = self.SPEED * seconds  # Скорость инфузории
         return Dl
+
 
     def eating(self):
         '''
@@ -189,15 +196,18 @@ class Infusoria:
 
     def clone(self):
         '''Размножение'''
+        # TODO fix новая инфузория появляется в дефолтных координатах, а не рядом со своим клоном
         if self.EAT_COUNT == 5:  # Когда съели достаточно еды
-            self.EAT_COUNT = 0  # Сбрасываем счётчик еды
+            self.EAT_COUNT = 0   # Сбрасываем счётчик еды
             self.COUNT_SEGMENT += 1  # Увеличиваем количество делений
-            # Клонируем инфузорию
-            # unit.append(copy.deepcopy(self))
+
+            # Подготавливаем новую инфузорию к клонированию
             new_inf = Infusoria()
             new_inf.COLOR = self.COLOR
             # Координаты новой инфузории смещены
+            print(self.POSITION)
             new_inf.POSITION = [self.POSITION[0]-self.radius, self.POSITION[1]-self.radius]
+            print(new_inf.POSITION)
             new_inf.AGE = 0  # Время жизни новой инфузории нулевое
 
             # поиск максмимального индекса
@@ -208,7 +218,7 @@ class Infusoria:
 
             # Увеличим индекс новой(текущей) инфузории на единицу
             new_inf.IDX = tmp_idx + 1
-
+            # Клонируем инфузорию
             unit.append(new_inf)
 
             '''Мутация на каждое Х деление'''
@@ -220,6 +230,7 @@ class Infusoria:
                 dna_index = random.randint(0, len(self.dna)-1)  # выбираем какой из генов будет мутировать
                 mutation_to = random.randint(-mutation_range, mutation_range)  # Вычисляем насколько мутировать
                 self.dna[dna_index] = self.dna[dna_index] + mutation_to  # Мутируем ген
+                # TODO fix вся популяция меняет цвет на чёрный после 12-ого клона
                 #clr = copy.copy(self.COLOR)        # Цвет новой инфузории меняется
                 clr = self.COLOR[0]                 # Цвет новой инфузории меняется
                 clr = clr+50                        # Цвет новой инфузории меняется
@@ -233,9 +244,9 @@ class Infusoria:
 
             if debug:
                 print >> sys.stderr, '!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', clone_count
-                for i in xrange(len(unit)):
-                    print >> sys.stderr, i+1, '--', id(unit[i]), 'age:', unit[i].AGE, '\teating:', unit[i].EAT_COUNT, \
-                        '\thunger:', unit[i].HUNGRY, '\tvision:', unit[i].VISION,  '\tcolor:', unit[i].COLOR
+                for u in unit:
+                    print >> sys.stderr, unit.index(u), 'age:', u.AGE, '\teating:', u.EAT_COUNT, \
+                        '\thunger:', u.HUNGRY, '\tvision:', u.VISION,  '\tcolor:', u.COLOR
                 time.sleep(4)
 
 
@@ -260,17 +271,33 @@ class Infusoria:
             return 0
 
 
+def clean_all_visions():
+    for u in unit:
+        pygame.draw.circle(screen, BGColor, [u.POSITION[0], u.POSITION[1]], u.VISION+2)  # затираем инфузорию
+
+
+def paint_all_visions():
+    '''
+    Рисовать области видимости инфузорий
+    '''
+    for u in unit:
+        pygame.draw.circle(screen, LocatorColor, [u.POSITION[0], u.POSITION[1]], u.VISION)
+
 
 def food():
+    '''
+    Прорисовка еды
+    '''
     global first_run
     if len(Foods) < FoodCount:
-        '''Если количество еды уменьшилось, добавить ещё'''
+        # Если количество еды уменьшилось, добавить ещё
         toapp = [int(random.uniform(0, width)), int(random.uniform(0, height))]
         Foods.append(toapp)
 
     for i in xrange(len(Foods)):
-        '''Прорисовка еды'''
+        # Прорисовка еды
         pygame.draw.circle(screen, FoodColor, Foods[i], FoodRadius)
+
 
 def collision(u):
     unchecked = []
@@ -314,6 +341,22 @@ def debug_out(u):
         # time.sleep(3)
 
 
+def population_limit(population):
+    if len(population) > 20:
+        # Убиваем самых старых
+        oldest = 0
+        idx = 0
+        for e in population:
+            if e.AGE > oldest:
+                oldest = e.AGE
+                idx = population.index(e)
+
+        print('Removing oldest {} with age {}'.format(idx, oldest))
+        # затираем инфузорию
+        pygame.draw.circle(screen, (0, 0, 0), [population[idx].POSITION[0], population[idx].POSITION[1]], population[idx].radius)
+        del(population[idx])
+        # time.sleep(2)
+
 
 def init_world():
     # # Для отладки, вручную задаю значения второй инфузории
@@ -336,23 +379,6 @@ def init_world():
     unit.append(infusoria2)
 
 
-
-def population_limit(population):
-    if len(population) > 20:
-        # Убиваем самых старых
-        oldest = 0
-        idx = 0
-        for e in population:
-            if e.AGE > oldest:
-                oldest = e.AGE
-                idx = population.index(e)
-
-        print('Removing oldest {} with age {}'.format(idx, oldest))
-        # затираем инфузорию
-        pygame.draw.circle(screen, (0, 0, 0), [population[idx].POSITION[0], population[idx].POSITION[1]], population[idx].radius)
-        del(population[idx])
-        # time.sleep(2)
-
 unit = []
 init_world()
 
@@ -365,18 +391,23 @@ while mainLoop:
     step = step + 1
     milli = clock.tick(20)
 
-    food()
-    # clear debug screen
+    clean_all_visions()
+
+
+    # Clear debug screen
     # time.sleep(2)
     print(chr(27) + "[2J")
     print('Step: {}  units: {}'.format(step, len(unit)))
 
     population_limit(unit)
 
+    # Подсчёт изменений по каждой инфузории
     for unt in unit:  # Выполняем операции с каждой инфузорией
         unt.AGE += 1      # Возраст увеличиваем на 1
         unt.HUNGRY += 1   # Увеличиваем на 1 время с последней кормёжки
-        unt.painting()
+        unt.clean()
+        unt.move()
+        # unt.paint()
         unt.eating()
         unt.set_target()
         unt.clone()
@@ -386,6 +417,14 @@ while mainLoop:
 
         # Debug
         debug_out(unt)
+
+    # Прорисовка новых координат
+    paint_all_visions()
+    food()
+
+    for unt in unit:
+        unt.paint()
+
 
 
     for event in pygame.event.get():

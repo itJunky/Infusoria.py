@@ -236,7 +236,10 @@ while mainLoop :
         print('Step:', step, '       Mutation count', mutation_count, '        Red units:', UC[0], 'Blue units:', UC[1] )# Всякий дебаг 
         for i in range(len(unit)):
             print( i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR'], '    xy:', unit[i]['POSITION'])
-    
+    if debug:	
+        print(!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', sex_count)	
+        for i in range(len(unit)):	
+            print(i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR'])
     for unt in range(len(unit)): # Выполняем операции с каждой инфузорией
         unit[unt]['AGE'] = unit[unt]['AGE']+1 # Возраст увеличиваем на 1
         unit[unt]['HUNGRY'] = unit[unt]['HUNGRY']+1 # Увеличиваем на 1 время с последней кормёжки

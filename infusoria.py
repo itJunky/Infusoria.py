@@ -110,7 +110,7 @@ def where_food(u):
     y = u['POSITION'][1]
     min_distance = 1000000000
     global radius
-    for i in xrange(len(Foods)):  # нахожу ближайшую еду
+    for i in range(len(Foods)):  # нахожу ближайшую еду
         xfood = Foods[i][0]  # Х координата еды
         yfood = Foods[i][1]  # Y координата еды
         distance = math.sqrt((xfood-x)**2+(yfood-y)**2)
@@ -141,7 +141,7 @@ def food():
         '''Если количество еды уменьшилось, добавить ещё'''
         toapp = [int(random.uniform(0,width)),int(random.uniform(0,height))]
         Foods.append(toapp)
-        for i in xrange(len(Foods)):
+        for i in range(len(Foods)):
             '''Прорисовка еды'''
             pygame.draw.circle(screen, FoodColor, Foods[i], radius)
     else:
@@ -191,12 +191,12 @@ def sex(u):
             mutation_count = mutation_count + 1
             #pygame.time.delay(1000)
             if debug:
-                print >> sys.stderr, '############### MUTATION ################ count:', mutation_count
+                print('############### MUTATION ################ count:', mutation_count)
 
- 	if debug:
-            print >> sys.stderr, '!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', sex_count
-            for i in xrange(len(unit)):
-                print >> sys.stderr, i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR']
+        if debug:
+            print('!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', sex_count)
+            for i in range(len(unit)):
+                print(i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR'])
 
 def death(u):
     '''Убиваем инфузорию'''
@@ -220,7 +220,7 @@ def if_all_death():
 def units_count():
     red = 0
     blue = 0
-    for i in xrange(len(unit)):
+    for i in range(len(unit)):
         if unit[i]['COLOR'][0] == 255: red = red+1
         elif unit[i]['COLOR'][2] == 255: blue = blue+1
     return red, blue
@@ -238,11 +238,11 @@ while mainLoop :
 
     UC = units_count()
     if debug:
-        print >> sys.stderr, 'Step:', step, '       Mutation count', mutation_count, '        Red units:', UC[0], 'Blue units:', UC[1] # Всякий дебаг 
-        for i in xrange(len(unit)):
-            print >> sys.stderr, i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR'], '    xy:', unit[i]['POSITION']
+        print('Step:', step, '       Mutation count', mutation_count, '        Red units:', UC[0], 'Blue units:', UC[1]) # Всякий дебаг 
+        for i in range(len(unit)):
+            print(i+1, '--', 'age:', unit[i]['AGE'], '   eating:', unit[i]['EAT_COUNT'], '  hunger:', unit[i]['HUNGRY'], '   color:', unit[i]['COLOR'], '    xy:', unit[i]['POSITION'])
     
-    for unt in xrange(len(unit)): # Выполняем операции с каждой инфузорией
+    for unt in range(len(unit)): # Выполняем операции с каждой инфузорией
         unit[unt]['AGE'] = unit[unt]['AGE']+1 # Возраст увеличиваем на 1
         unit[unt]['HUNGRY'] = unit[unt]['HUNGRY']+1 # Увеличиваем на 1 время с последней кормёжки
         painting(unit[unt]) # Прорисовка

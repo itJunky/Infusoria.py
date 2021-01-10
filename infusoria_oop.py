@@ -33,7 +33,7 @@ mutation_range = 40  # Диапазон(сила) мутации
 
 class Infusoria:
     def __init__(self):
-        passprint
+        pass
 
     InfColor = [0, 0, 255]  # Цвет инфузории
     radius = 5

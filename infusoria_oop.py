@@ -33,7 +33,7 @@ mutation_range = 40  # Диапазон(сила) мутации
 
 class Infusoria:
     def __init__(self):
-        pass
+        passprint
 
     InfColor = [0, 0, 255]  # Цвет инфузории
     radius = 5
@@ -184,12 +184,12 @@ class Infusoria:
                 mutation_count = mutation_count + 1
 
                 if debug:
-                    print >> sys.stderr, '############### MUTATION ################ count:', mutation_count
+                    print('############### MUTATION ################ count:', mutation_count)
 
             if debug:
-                print >> sys.stderr, '!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', clone_count
+                print('!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', clone_count)
                 for i in xrange(len(unit)):
-                    print >> sys.stderr, i+1, '--', id(unit[i]), 'age:', unit[i].AGE, '   eating:', unit[i].EAT_COUNT, '  hunger:', unit[i].HUNGRY, '   color:', unit[i].COLOR
+                    print(i+1, '--', id(unit[i]), 'age:', unit[i].AGE, '   eating:', unit[i].EAT_COUNT, '  hunger:', unit[i].HUNGRY, '   color:', unit[i].COLOR)
 
 
     def death(self):

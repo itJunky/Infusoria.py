@@ -131,7 +131,7 @@ class Infusoria:
         y = self.POSITION[1]
         min_distance = 1000000000
 
-        for i in xrange(len(Foods)):  # нахожу ближайшую еду
+        for i in range(len(Foods)):  # нахожу ближайшую еду
             xfood = Foods[i][0]  # Х координата еды
             yfood = Foods[i][1]  # Y координата еды
             distance = math.sqrt((xfood-x)**2+(yfood-y)**2)
@@ -215,13 +215,13 @@ def food():
         '''Если количество еды уменьшилось, добавить ещё'''
         toapp = [int(random.uniform(0, width)), int(random.uniform(0, height))]
         Foods.append(toapp)
-        for i in xrange(len(Foods)):
+        for i in range(len(Foods)):
             '''Прорисовка еды'''
             pygame.draw.circle(screen, FoodColor, Foods[i], FoodRadius)
 
 def collision(u):
     unchecked = []
-    for unt in xrange(len(unit)): # Заполняем массив для проверки
+    for unt in range(len(unit)): # Заполняем массив для проверки
         if u.POSITION[0] == unit[unt].POSITION[0] and u.POSITION[1] == unit[unt].POSITION[1]:
             pass
         else: # Иключаем из списка выбранный экземпляр
@@ -252,7 +252,7 @@ while mainLoop:
 
     food()
 
-    for unt in xrange(len(unit)):  # Выполняем операции с каждой инфузорией
+    for unt in range(len(unit)):  # Выполняем операции с каждой инфузорией
         unit[unt].AGE += 1      # Возраст увеличиваем на 1
         unit[unt].HUNGRY += 1   # Увеличиваем на 1 время с последней кормёжки
         unit[unt].painting()

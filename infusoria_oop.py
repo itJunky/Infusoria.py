@@ -188,7 +188,7 @@ class Infusoria:
 
             if debug:
                 print('!!!!!!!!!!!!!!!!!!!!!!CLONING!!!!!!!!!!!!!!!!!!!!!!!!!!', len(unit), 'units', '       sex_count', clone_count)
-                for i in xrange(len(unit)):
+                for i in range(len(unit)):
                     print(i+1, '--', id(unit[i]), 'age:', unit[i].AGE, '   eating:', unit[i].EAT_COUNT, '  hunger:', unit[i].HUNGRY, '   color:', unit[i].COLOR)
 
 
